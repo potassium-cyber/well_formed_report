@@ -1,39 +1,44 @@
-// 1. 设置页面
+// 1. 页面设置
 #set page(
   paper: "a4",
   margin: (top: 2.5cm, bottom: 2.5cm, left: 3cm, right: 3cm),
   numbering: "1",
 )
 
-// 2. 字体配置
-// 显式加载刚才上传的 Fandol 字体文件
-#set text(
-  font: ("Times New Roman", "FandolSong"), 
-  size: 12pt,
-  lang: "zh"
-)
+// 2. 字体定义
+#let songti = ("Times New Roman", "FandolSong")
+#let heiti = ("Times New Roman", "FandolHei")
+#let xingkai_font = ("STXingkai")
 
-// 配置粗体映射：当使用 *粗体* 时，Typst 会自动使用 Bold 文件
-#show strong: set text(font: ("Times New Roman", "FandolSong"), weight: "bold")
+// 全局默认：宋体正文
+#set text(font: songti, size: 12pt, lang: "zh")
 
-// 华文行楷辅助函数 (仅用于封面标题)
-#let xingkai(body) = text(font: "STXingkai", size: 36pt, weight: "bold", body)
+// 粗体映射：全局的 *粗体* 默认使用黑体（符合学术论文规范）
+#show strong: set text(font: heiti, weight: "bold")
 
-// 章节标题：使用 FandolSong 的粗体
+// 标题样式：使用黑体
 #show heading: it => [
-  #set text(font: ("Times New Roman", "FandolSong"), weight: "bold")
-  #block(it)
+  #set text(font: heiti, weight: "bold")
+  #v(0.5em)
+  #it
+  #v(0.5em)
 ]
+
+// 专用字体辅助函数
+#let xingkai(body) = text(font: xingkai_font, size: 36pt, weight: "bold", body)
+#let bold_label(body) = text(font: heiti, weight: "bold", body)
 
 // 3. 辅助函数：封面信息行
 #let info_row(label, value, line_width: 7cm) = {
   let label_box = box(width: 5em, align(center)[
-    #let chars = label.clusters()
-    #if chars.len() == 2 {
-      chars.first() + h(1fr) + chars.last()
-    } else {
-      label
-    }
+    #bold_label[
+      #let chars = label.clusters()
+      #if chars.len() == 2 {
+        chars.first() + h(1fr) + chars.last()
+      } else {
+        label
+      }
+    ]
   ])
   
   let value_box = box(
@@ -44,7 +49,7 @@
   )
 
   block(height: 1.8em)[
-    #text(weight: "bold")[#label_box]：#value_box
+    #label_box：#value_box
   ]
 }
 
@@ -52,12 +57,9 @@
 
 // ================= 封面 =================
 #align(center)[
-  // 如果没有校徽，显示占位文本
   #image("school_logo.png", width: 10cm) 
-  
   #v(2.5cm)
   
-  // 只有这里使用行楷
   #xingkai[《#data.title》]
   #v(1cm)
   #xingkai[课程论文]
@@ -72,10 +74,6 @@
     #info_row("学号", data.student_id)
     #info_row("姓名", data.student_name)
     #info_row("指导老师", data.supervisor)
-    // 如果有课程名称，也可以显示
-    #if "course" in data {
-       info_row("课程", data.course)
-    }
   ]
   
   #v(1fr)
@@ -93,13 +91,13 @@
 #counter(page).update(1)
 
 #align(center)[
-  #text(size: 16pt, weight: "bold")[#data.title]
+  #text(size: 16pt, font: heiti, weight: "bold")[#data.title]
   #v(0.5em)
   #text(size: 14pt)[#data.student_name \quad 指导老师：#data.supervisor]
 ]
 
 #v(1em)
-#align(center)[#text(size: 16pt, weight: "bold")[摘 要]]
+#align(center)[#text(size: 16pt, font: heiti, weight: "bold")[摘 要]]
 #v(0.5em)
 
 #par(justify: true, first-line-indent: 2em)[
@@ -107,17 +105,17 @@
 ]
 
 #v(1em)
-*关键词：* #data.keywords_zh
+#bold_label[关键词：] #data.keywords_zh
 
 #pagebreak()
 #align(center)[
-  #text(size: 16pt, weight: "bold")[#data.title_en]
+  #text(size: 16pt, font: heiti, weight: "bold")[#data.title_en]
   #v(0.5em)
   #text(size: 14pt)[#data.student_name_en \quad Supervisor: #data.supervisor_en]
 ]
 
 #v(1em)
-#align(center)[#text(size: 16pt, weight: "bold")[Abstract]]
+#align(center)[#text(size: 16pt, font: heiti, weight: "bold")[Abstract]]
 #v(0.5em)
 
 #par(justify: true)[
@@ -125,11 +123,11 @@
 ]
 
 #v(1em)
-*Keywords:* #data.keywords_en
+#bold_label[Keywords:] #data.keywords_en
 
 // ================= 目录 =================
 #pagebreak()
-#outline(title: "目录", indent: auto)
+#outline(title: text(font: heiti, "目录"), indent: auto)
 
 // ================= 正文 =================
 #pagebreak()
@@ -158,12 +156,13 @@
         align: center + horizon,
         stroke: none,
         table.hline(y: 0, stroke: 1.5pt),
-        table.header(..block.headers.map(h => [*#h*])),
+        // 表头使用黑体
+        table.header(..block.headers.map(h => [#bold_label[#h]])),
         table.hline(y: 1, stroke: 0.5pt),
         ..block.rows.flatten(),
         table.hline(stroke: 1.5pt),
       ),
-      caption: "数据表"
+      caption: text(font: heiti, "数据表")
     )
   }
 }
