@@ -1,0 +1,184 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{fontspec}
+\usepackage{xeCJK}     % 显式使用 xeCJK 以便更好控制
+\usepackage{pgffor}
+\usepackage{ragged2e}
+\usepackage{booktabs}  % 表格支持
+\usepackage{amsmath}   % 公式支持
+\usepackage{hyperref}  % 目录跳转
+
+\geometry{top=2.5cm,bottom=2.5cm,left=3cm,right=3cm}
+
+% ------- 字体配置 (适配本地文件) ------- 
+% 使用 Fandol 作为基础中文字体（Tectonic 自动下载）
+\setCJKmainfont[
+    BoldFont=FandolSong-Bold.otf,
+    ItalicFont=FandolKai-Regular.otf
+]{FandolSong-Regular.otf}
+
+% 定义华文行楷 (使用当前目录下的文件)
+% AutoFakeBold 可以让它支持伪粗体
+\newCJKfontfamily\xingkai[Path=./, AutoFakeBold]{STXingkai.TTF}
+
+% ------- 变量定义 (来自 Jinja2) ------- 
+% 我们不需要 \newcommand 来定义变量了，直接在正文中插入 {{ variable }}
+
+% 封面用横线填写区
+\newcommand{\fillin}[1]{\underline{\makebox[7cm][l]{\hspace{0.5cm}#1}}}
+\newcommand{\fillinshort}[1]{\underline{\makebox[1cm][c]{ #1}}}
+
+% ------- 正文开始 ------- 
+\begin{document}
+
+% 封面
+\begin{titlepage}
+    \centering
+    % 确保 logo 存在，否则用占位符
+    \IfFileExists{school_logo.png}{
+        \includegraphics[width=10cm]{school_logo.png}
+    }{
+        \vspace{2cm} \textbf{[School Logo Missing]} \vspace{1cm}
+    }
+
+    \vspace{2.5cm}
+
+    % 字号设置：TeX 的 \zihao 命令通常由 ctex 提供。
+    % 这里我们用标准字号命令模拟，或者如果用 ctexart 类则直接可用。
+    % 为了保持对你原模版的最大兼容，我们改用 ctexart 类，或者手动定义 zihao
+    % 简单起见，这里用 fontsize 模拟:
+    % \zihao{-0} 约等于 36pt (小初)
+    % \zihao{-2} 约等于 22pt (小二)
+    % \zihao{3}  约等于 16pt (三号)
+    % \zihao{4}  约等于 14pt (四号)
+    % \zihao{-4} 约等于 12pt (小四)
+    
+    {\fontsize{36pt}{40pt}\selectfont \xingkai \textbf{《{{ e(title) }}》}}\\[1cm]
+    {\fontsize{36pt}{40pt}\selectfont \xingkai \textbf{课程论文}}\\[3cm]
+
+    {\fontsize{22pt}{30pt}\selectfont
+    \begin{tabular}{p{5.3cm}p{10cm}}
+        \raggedleft \textbf{学\qquad 院}： & \fillin{ {{ e(college) }} } \\[0.4cm]
+        \raggedleft \textbf{专\qquad 业}： & \fillin{ {{ e(major) }} } \\[0.4cm]
+        \raggedleft \textbf{年\qquad 级}： & \fillin{ {{ e(grade) }} } \\[0.4cm]
+        \raggedleft \textbf{学\qquad 号}： & \fillin{ {{ e(student_id) }} } \\[0.4cm]
+        \raggedleft \textbf{姓\qquad 名}： & \fillin{ {{ e(student_name) }} } \\[0.4cm]
+        \raggedleft \textbf{指导老师}： & \fillin{ {{ e(supervisor) }} } \\ 
+    \end{tabular}
+    }
+
+    \vfill
+
+    {\fontsize{14pt}{20pt}\selectfont
+    完成日期：\quad \fillinshort{ {{ e(finish_year) }} }\quad 年\quad \fillinshort{ {{ e(finish_month) }} }\quad 月
+    }
+\end{titlepage}
+
+% 扉页（中文英文摘要）
+\newpage
+\pagenumbering{roman}
+
+\centering
+{\fontsize{16pt}{20pt}\selectfont \textbf{ {{ e(title) }} }}\\[0.5cm]
+\vspace{0.5cm}
+{\fontsize{14pt}{18pt}\selectfont
+{{ e(student_name) }}\qquad 指导老师：{{ e(supervisor) }}\\[1cm]
+}
+
+\noindent
+{\fontsize{16pt}{20pt}\selectfont \textbf{摘\quad 要}}\\[0.5cm]
+
+\justifying 
+\noindent
+{\fontsize{12pt}{18pt}\selectfont
+{{ e(abstract_zh) }}\\[1cm]
+}
+
+\noindent
+\textbf{关键词：{{ e(keywords_zh) }}}
+
+\newpage
+\centering
+{\fontsize{16pt}{20pt}\selectfont \textbf{ {{ e(title_en) }} }}\\[0.5cm]
+\vspace{0.5cm}
+{\fontsize{14pt}{18pt}\selectfont
+{{ e(student_name_en) }}\qquad Supervisor: {{ e(supervisor_en) }}\\[1cm]
+}
+
+\noindent
+{\fontsize{16pt}{20pt}\selectfont \textbf{Abstract}}\\[0.5cm]
+
+\justifying 
+\noindent
+{\fontsize{12pt}{18pt}\selectfont
+{{ e(abstract_en) }}\\[1cm]
+}
+
+\noindent
+\textbf{Keywords: {{ e(keywords_en) }}}
+
+% 目录页
+\newpage
+\centering
+\vspace{1cm}
+\tableofcontents
+
+% 正文开始
+\newpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\justifying 
+
+% 动态生成章节
+{% for block in content_blocks %}
+
+    {% if block.type == 'section' %}
+        \section{ {{- e(block.title) -}} }
+        % section 自动会进目录，不需要手动 addcontentsline
+
+    {% elif block.type == 'subsection' %}
+        \subsection{ {{- e(block.title) -}} }
+
+    {% elif block.type == 'text' %}
+        \par {{ e(block.content) }}
+        \vspace{0.5em}
+
+    {% elif block.type == 'equation' %}
+        \begin{equation}
+            {{ block.content }}
+        \end{equation}
+
+    {% elif block.type == 'image' %}
+        \begin{figure}[h]
+            \centering
+            \includegraphics[width=0.8\textwidth]{ {{- block.path -}} }
+            \caption{ {{- e(block.caption) -}} }
+        \end{figure}
+
+    {% elif block.type == 'table' %}
+        \begin{table}[h]
+            \centering
+            \caption{数据表}
+            \vspace{0.2em}
+            \begin{tabular}{ {{ 'c' * block.headers|length }} }
+                \toprule
+                {% for h in block.headers -%}
+                    \textbf{ {{- e(h) -}} } {% if not loop.last %} & {% endif %}
+                {%- endfor %} \\ 
+                \midrule
+                {% for row in block.rows %}
+                    {% for cell in row -%}
+                        {{ e(cell) }} {% if not loop.last %} & {% endif %}
+                    {%- endfor %} \\ 
+                {% endfor %}
+                \bottomrule
+            \end{tabular}
+        \end{table}
+
+    {% endif %}
+
+{% endfor %}
+
+\end{document}

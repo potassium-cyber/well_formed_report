@@ -1,0 +1,70 @@
+\documentclass[a4paper, fontset=fandol]{ctexart}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{amsmath}
+
+\geometry{left=2.5cm, right=2.5cm, top=3cm, bottom=3cm}
+
+\title{ {{- e(title) -}} }
+\author{
+    \textbf{学生姓名：} {{- e(student_name) -}} \\
+    \textbf{学号：} {{- e(student_id) -}}
+}
+\date{ {{- e(semester) -}} }
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+    \large \textbf{课程名称：} {{- e(course) -}}
+\end{center}
+\vspace{1cm}
+
+{% for block in content_blocks %}
+
+    {% if block.type == 'section' %}
+        \section*{ {{- e(block.title) -}} }
+        \addcontentsline{toc}{section}{ {{- e(block.title) -}} }
+
+    {% elif block.type == 'text' %}
+        \par {{ e(block.content) }}
+        \vspace{0.5em}
+
+    {% elif block.type == 'equation' %}
+        \begin{equation}
+            {{ block.content }}
+        \end{equation}
+
+    {% elif block.type == 'image' %}
+        \begin{figure}[h]
+            \centering
+            \includegraphics[width=0.8\textwidth]{ {{- block.path -}} }
+            \caption{ {{- e(block.caption) -}} }
+        \end{figure}
+
+    {% elif block.type == 'table' %}
+        \begin{table}[h]
+            \centering
+            \begin{tabular}{ {{ 'c' * block.headers|length }} }
+                \toprule
+                {% for h in block.headers -%}
+                    \textbf{ {{- e(h) -}} } {% if not loop.last %} & {% endif %}
+                {%- endfor %} \\
+                \midrule
+                {% for row in block.rows %}
+                    {% for cell in row -%}
+                        {{ e(cell) }} {% if not loop.last %} & {% endif %}
+                    {%- endfor %} \\
+                {% endfor %}
+                \bottomrule
+            \end{tabular}
+        \end{table}
+
+    {% endif %}
+
+{% endfor %}
+
+\end{document}

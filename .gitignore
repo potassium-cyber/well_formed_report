@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Node.js / Frontend
+node_modules/
+dist/
+.env
+.env.local
+npm-debug.log*
+
+# Backend Runtime
+pdf_generator_app/backend/temp_builds/
+pdf_generator_app/backend/server.log
+
+# Prototypes (可选：如果你不想提交之前的测试代码，可以把下面这行取消注释)
+# prototypes/
