@@ -16,7 +16,7 @@ interface ContentBlock {
 
 function App() {
   const [formData, setFormData] = useState({
-    course: "人工智能导论",
+    course: "创新创造能力训练I", // 默认课程
     title: "基于深度学习的图像识别研究",
     student_name: "张小明",
     student_id: "20230001",
@@ -112,9 +112,10 @@ function App() {
               onChange={(e) => setFormData({...formData, course: e.target.value})}
               style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
             >
+              <option value="创新创造能力训练I">创新创造能力训练I</option>
+              <option value="创新创造能力训练II">创新创造能力训练II</option>
+              <option value="教育见习">教育见习</option>
               <option value="人工智能导论">人工智能导论</option>
-              <option value="大学物理">大学物理</option>
-              <option value="Python程序设计">Python程序设计</option>
             </select>
           </div>
 

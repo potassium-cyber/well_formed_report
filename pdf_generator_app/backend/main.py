@@ -40,34 +40,44 @@ class ContentBlock(BaseModel):
     rows: Optional[List[List[Any]]] = None
 
 class ReportRequest(BaseModel):
+    course: str  # 新增字段
     title: str
     title_en: str
-    student_name: str
-    student_id: str
-    college: str
-    major: str
-    grade: str
-    supervisor: str
-    supervisor_en: str
-    student_name_en: str
-    finish_year: str
-    finish_month: str
-    abstract_zh: str
-    keywords_zh: str
-    abstract_en: str
-    keywords_en: str
-    content_blocks: List[ContentBlock]
+# ... (中间字段保持不变)
 
 @app.post("/generate")
 async def generate_pdf(request: ReportRequest):
-    # 1. 创建构建目录
     build_id = str(uuid.uuid4())
     build_dir = os.path.join(TEMP_DIR, build_id)
     os.makedirs(build_dir, exist_ok=True)
     
     try:
-        # 2. 复制模板 (main.typ) 到构建目录
-        shutil.copy2(os.path.join(TEMPLATE_DIR, "main.typ"), build_dir)
+        # 2. 智能模版路由
+        # 默认使用 paper.typ (如果你保留了它作为通用模版)
+        # 或者默认使用 tech_report.typ
+        template_name = "paper.typ" 
+        
+        if request.course in ["创新创造能力训练I", "创新创造能力训练II"]:
+            template_name = "tech_report.typ"
+        elif request.course == "教育见习":
+            template_name = "edu_report.typ"
+        else:
+            # 兜底：如果没有匹配到，默认用 paper.typ 或 tech_report.typ
+            template_name = "paper.typ"
+
+        # 检查模版是否存在
+        src_template = os.path.join(TEMPLATE_DIR, template_name)
+        if not os.path.exists(src_template):
+            # 如果特定的模版还没上传，回退到 main.typ (如果有) 或报错
+            # 这里假设我们至少有一个兜底的
+            print(f"Template {template_name} not found, using fallback.")
+            if os.path.exists(os.path.join(TEMPLATE_DIR, "paper.typ")):
+                src_template = os.path.join(TEMPLATE_DIR, "paper.typ")
+            elif os.path.exists(os.path.join(TEMPLATE_DIR, "main.typ")):
+                src_template = os.path.join(TEMPLATE_DIR, "main.typ")
+        
+        # 复制选中的模版为 main.typ (这样后面的编译命令不用变)
+        shutil.copy2(src_template, os.path.join(build_dir, "main.typ"))
         
         # 3. 复制资源 (字体、图片) 到构建目录
         # Typst 需要在编译时能访问到这些文件
