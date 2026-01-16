@@ -14,6 +14,36 @@ interface ContentBlock {
   rows?: string[][];
 }
 
+// 预设的课程章节模版
+const COURSE_TEMPLATES: Record<string, ContentBlock[]> = {
+  "创新创造能力训练I": [
+    { id: 't1', type: 'section', title: '一、项目背景与设计思路' },
+    { id: 't2', type: 'text', content: '在此处描述你选择该项目的原因，以及你的设计灵感来源...' },
+    { id: 't3', type: 'section', title: '二、Blender 3D 建模过程' },
+    { id: 't4', type: 'text', content: '描述你在建模过程中遇到的难点及解决方案，可插入截图...' },
+    { id: 't5', type: 'section', title: '三、激光切割与 3D 打印实操' },
+    { id: 't6', type: 'text', content: '记录参数设置、打印时间及成品效果...' },
+    { id: 't7', type: 'section', title: '四、课程总结与反思' },
+    { id: 't8', type: 'text', content: '通过本课程的学习，我掌握了...' },
+  ],
+  "创新创造能力训练II": [
+    { id: 'p1', type: 'section', title: '一、Python 编程基础' },
+    { id: 'p2', type: 'text', content: '本章主要练习了变量、循环与函数的使用...' },
+    { id: 'p3', type: 'section', title: '二、项目实践：小游戏开发' },
+    { id: 'p4', type: 'text', content: '项目功能描述...' },
+    { id: 'p5', type: 'section', title: '三、代码调试与优化' },
+    { id: 'p6', type: 'text', content: '遇到的 Bug 及修复过程...' },
+  ],
+  "教育见习": [
+    { id: 'e1', type: 'section', title: '一、见习学校概况' },
+    { id: 'e2', type: 'text', content: '见习学校的基本情况介绍...' },
+    { id: 'e3', type: 'section', title: '二、课堂观摩记录' },
+    { id: 'e4', type: 'text', content: '记录印象深刻的一堂课...' },
+    { id: 'e5', type: 'section', title: '三、班主任工作体验' },
+    { id: 'e6', type: 'section', title: '四、教育反思与职业规划' },
+  ]
+};
+
 function App() {
   const [formData, setFormData] = useState({
     course: "创新创造能力训练I", // 默认课程
@@ -26,11 +56,8 @@ function App() {
     supervisor: "李教授",
   });
 
-  // 动态内容块状态
-  const [blocks, setBlocks] = useState<ContentBlock[]>([
-    { id: '1', type: 'section', title: '引言' },
-    { id: '2', type: 'text', content: '随着人工智能技术的飞速发展，计算机视觉已成为最热门的研究领域之一。' }
-  ]);
+  // 动态内容块状态 (初始化使用默认课程的模版)
+  const [blocks, setBlocks] = useState<ContentBlock[]>(COURSE_TEMPLATES["创新创造能力训练I"]);
 
   const [loading, setLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -94,6 +121,21 @@ function App() {
     }
   };
 
+  // 处理课程切换
+  const handleCourseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCourse = e.target.value;
+    setFormData({ ...formData, course: newCourse });
+    
+    // 如果该课程有预设模版，且用户确认（防止误删），则加载新模版
+    // 为了体验流畅，这里暂时不做弹窗确认，直接切换（你可以自己加 confirm）
+    if (COURSE_TEMPLATES[newCourse]) {
+      setBlocks(COURSE_TEMPLATES[newCourse]);
+    } else {
+      // 默认清空或保留通用结构
+      setBlocks([{ id: 'default', type: 'section', title: '第一章' }]);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: 'sans-serif' }}>
       {/* 左侧：编辑器 */}
@@ -109,7 +151,7 @@ function App() {
             <select 
               name="course" 
               value={formData.course} 
-              onChange={(e) => setFormData({...formData, course: e.target.value})}
+              onChange={handleCourseChange}
               style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
             >
               <option value="创新创造能力训练I">创新创造能力训练I</option>
