@@ -68,13 +68,12 @@ async def generate_pdf(request: ReportRequest):
         # 检查模版是否存在
         src_template = os.path.join(TEMPLATE_DIR, template_name)
         if not os.path.exists(src_template):
-            # 如果特定的模版还没上传，回退到 main.typ (如果有) 或报错
-            # 这里假设我们至少有一个兜底的
-            print(f"Template {template_name} not found, using fallback.")
-            if os.path.exists(os.path.join(TEMPLATE_DIR, "paper.typ")):
-                src_template = os.path.join(TEMPLATE_DIR, "paper.typ")
-            elif os.path.exists(os.path.join(TEMPLATE_DIR, "main.typ")):
-                src_template = os.path.join(TEMPLATE_DIR, "main.typ")
+            # 尝试回退到通用模版 paper.typ
+            print(f"Template {template_name} not found, trying fallback to paper.typ")
+            src_template = os.path.join(TEMPLATE_DIR, "paper.typ")
+            
+            if not os.path.exists(src_template):
+                raise FileNotFoundError(f"Template not found: {template_name} (and fallback paper.typ missing)")
         
         # 复制选中的模版为 main.typ (这样后面的编译命令不用变)
         shutil.copy2(src_template, os.path.join(build_dir, "main.typ"))
