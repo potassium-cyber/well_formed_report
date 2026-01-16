@@ -5,61 +5,65 @@
   numbering: "1",
 )
 
-// 2. 字体设置
+// 2. 字体配置
+// 显式加载刚才上传的 Fandol 字体文件
 #set text(
-  font: ("Times New Roman", "Songti SC", "SimSun"),
+  font: ("Times New Roman", "FandolSong"), 
   size: 12pt,
   lang: "zh"
 )
 
-// 华文行楷辅助函数
-#let xingkai(body) = text(font: "STXingkai", weight: "bold", size: 36pt, body)
+// 配置粗体映射：当使用 *粗体* 时，Typst 会自动使用 Bold 文件
+#show strong: set text(font: ("Times New Roman", "FandolSong"), weight: "bold")
+
+// 华文行楷辅助函数 (仅用于封面标题)
+#let xingkai(body) = text(font: "STXingkai", size: 36pt, weight: "bold", body)
+
+// 章节标题：使用 FandolSong 的粗体
+#show heading: it => [
+  #set text(font: ("Times New Roman", "FandolSong"), weight: "bold")
+  #block(it)
+]
 
 // 3. 辅助函数：封面信息行
-// label: 标签文本（如"学院"）
-// value: 填入的内容
-// width: 下划线的总长度
 #let info_row(label, value, line_width: 7cm) = {
-  // 左侧标签：固定宽度，分散对齐
   let label_box = box(width: 5em, align(center)[
     #let chars = label.clusters()
     #if chars.len() == 2 {
-      // 两个字：中间加很多空格
       chars.first() + h(1fr) + chars.last()
     } else {
       label
     }
   ])
   
-  // 右侧内容：下划线盒子
   let value_box = box(
     width: line_width,
     stroke: (bottom: 0.5pt + black),
-    outset: (bottom: 2pt), // 下划线稍微往下一点
+    outset: (bottom: 2pt), 
     align(center, value)
   )
 
-  // 组合
   block(height: 1.8em)[
     #text(weight: "bold")[#label_box]：#value_box
   ]
 }
 
-// 读取数据
 #let data = json("real_data.json")
 
 // ================= 封面 =================
 #align(center)[
-  #image("school_logo.png", width: 10cm)
+  // 如果没有校徽，显示占位文本
+  #image("school_logo.png", width: 10cm) 
+  
   #v(2.5cm)
   
+  // 只有这里使用行楷
   #xingkai[《#data.title》]
   #v(1cm)
   #xingkai[课程论文]
   
   #v(3cm)
   
-  // 信息表区域
   #set text(size: 16pt)
   #align(center)[
     #info_row("学院", data.college)
@@ -68,6 +72,10 @@
     #info_row("学号", data.student_id)
     #info_row("姓名", data.student_name)
     #info_row("指导老师", data.supervisor)
+    // 如果有课程名称，也可以显示
+    #if "course" in data {
+       info_row("课程", data.course)
+    }
   ]
   
   #v(1fr)
@@ -128,7 +136,6 @@
 #set page(numbering: "1")
 #counter(page).update(1)
 
-// 动态渲染
 #for block in data.content_blocks {
   if block.type == "section" {
     heading(level: 1, block.title)
@@ -140,9 +147,6 @@
     v(0.5em)
     
   } else if block.type == "equation" {
-    // 渲染数学公式
-    // block.content 是纯文本 "E=mc^2"，我们需要把它变成 Typst 的 math block
-    // eval 动态执行代码： $ + content + $
     align(center)[
       #eval("$ " + block.content + " $")
     ]
@@ -152,19 +156,11 @@
       table(
         columns: block.headers.len(),
         align: center + horizon,
-        stroke: none, // 去掉默认网格线
-        
-        // 三线表：顶线
+        stroke: none,
         table.hline(y: 0, stroke: 1.5pt),
-        // 表头
         table.header(..block.headers.map(h => [*#h*])),
-        // 表头下的线
         table.hline(y: 1, stroke: 0.5pt),
-        
-        // 内容
         ..block.rows.flatten(),
-        
-        // 底线
         table.hline(stroke: 1.5pt),
       ),
       caption: "数据表"
