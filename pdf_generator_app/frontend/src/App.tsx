@@ -120,6 +120,22 @@ function App() {
           </div>
 
           <div className="form-group">
+            <label>学院</label>
+            <input value={formData.college} onChange={(e) => setFormData({...formData, college: e.target.value})} />
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>专业</label>
+              <input value={formData.major} onChange={(e) => setFormData({...formData, major: e.target.value})} />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>年级</label>
+              <input value={formData.grade} onChange={(e) => setFormData({...formData, grade: e.target.value})} />
+            </div>
+          </div>
+
+          <div className="form-group">
             <label>论文标题</label>
             <input name="title" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
           </div>
