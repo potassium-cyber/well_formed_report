@@ -40,10 +40,24 @@ class ContentBlock(BaseModel):
     rows: Optional[List[List[Any]]] = None
 
 class ReportRequest(BaseModel):
-    course: str  # 新增字段
+    course: str
     title: str
     title_en: str
-# ... (中间字段保持不变)
+    student_name: str
+    student_id: str
+    college: str
+    major: str
+    grade: str
+    supervisor: str
+    supervisor_en: str
+    student_name_en: str
+    finish_year: str
+    finish_month: str
+    abstract_zh: str
+    keywords_zh: str
+    abstract_en: str
+    keywords_en: str
+    content_blocks: List[ContentBlock]
 
 @app.post("/generate")
 async def generate_pdf(request: ReportRequest):
