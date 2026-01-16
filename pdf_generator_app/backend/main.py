@@ -4,11 +4,21 @@ import subprocess
 import uuid
 import json
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional, Any
 
 app = FastAPI()
+
+# --- 配置 CORS (解决跨域问题) ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许任何来源的前端访问 (生产环境建议改为具体的 Netlify 域名)
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许所有 HTTP 方法 (GET, POST等)
+    allow_headers=["*"],  # 允许所有 Header
+)
 
 # --- 配置路径 ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
